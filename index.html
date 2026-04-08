@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XChangeNow — Currency Converter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #1a1a24;
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.15);
+      --accent: #00e5a0;
+      --accent-dim: rgba(0,229,160,0.12);
+      --accent-glow: rgba(0,229,160,0.25);
+      --text: #f0f0f5;
+      --text-muted: #8888aa;
+      --text-dim: #55556a;
+      --danger: #ff5e5e;
+      --mono: 'DM Mono', monospace;
+      --sans: 'Space Grotesk', sans-serif;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 60px;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text);
+      font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em;
+    }
+
+    .nav-logo .dot { color: var(--accent); }
+
+    .nav-links { display: flex; gap: 0.25rem; list-style: none; }
+    .nav-links a {
+      text-decoration: none; color: var(--text-muted);
+      font-size: 0.875rem; padding: 6px 14px; border-radius: var(--radius-sm);
+      transition: all 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); background: var(--surface2); }
+    .nav-links a.active { color: var(--accent); }
+
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+
+    .lang-toggle {
+      display: flex; background: var(--surface2); border-radius: var(--radius-sm);
+      border: 1px solid var(--border); overflow: hidden;
+    }
+    .lang-btn {
+      padding: 5px 12px; border: none; background: transparent;
+      color: var(--text-muted); font-size: 0.8rem; font-family: var(--sans);
+      cursor: pointer; transition: all 0.2s;
+    }
+    .lang-btn.active { background: var(--accent); color: #000; font-weight: 600; }
+
+    .burger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+    .burger span { display: block; width: 22px; height: 2px; background: var(--text-muted); border-radius: 2px; transition: all 0.3s; }
+    .burger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+    .burger.open span:nth-child(2) { opacity: 0; }
+    .burger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+    /* MAIN */
+    main {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 100px 1.5rem 3rem;
+      min-height: 100vh;
+    }
+
+    .hero-label {
+      font-family: var(--mono); font-size: 0.75rem; letter-spacing: 0.12em;
+      color: var(--accent); text-transform: uppercase;
+      background: var(--accent-dim); border: 1px solid var(--accent-glow);
+      padding: 4px 14px; border-radius: 100px; margin-bottom: 1.25rem;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 700; letter-spacing: -0.04em;
+      text-align: center; line-height: 1.1;
+      margin-bottom: 0.6rem;
+    }
+    h1 span { color: var(--accent); }
+
+    .subtitle {
+      color: var(--text-muted); font-size: 1rem; text-align: center;
+      margin-bottom: 2.5rem; max-width: 400px; line-height: 1.6;
+    }
+
+    /* CARD */
+    .card {
+      width: 100%; max-width: 520px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2rem;
+      position: relative;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute; top: -1px; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
+    }
+
+    /* FORM */
+    .field { margin-bottom: 1rem; }
+
+    label {
+      display: block; font-size: 0.78rem; font-weight: 500;
+      color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: 0.08em; margin-bottom: 6px;
+    }
+
+    input[type="number"] {
+      width: 100%; padding: 0 1rem; height: 52px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: var(--mono); font-size: 1.3rem; font-weight: 500;
+      outline: none; transition: border-color 0.2s;
+      appearance: textfield; -moz-appearance: textfield;
+    }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type="number"]:focus { border-color: var(--accent); }
+    input::placeholder { color: var(--text-dim); font-size: 1rem; }
+
+    .currency-row {
+      display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px;
+      align-items: end; margin-bottom: 1.25rem;
+    }
+
+    .select-wrap { position: relative; }
+
+    .flag-select {
+      width: 100%; height: 52px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text);
+      font-family: var(--sans); font-size: 0.9rem;
+      padding: 0 2.5rem 0 3.5rem;
+      outline: none; cursor: pointer; transition: border-color 0.2s;
+      appearance: none; -webkit-appearance: none;
+    }
+    .flag-select:focus { border-color: var(--accent); }
+
+    .flag-preview {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      width: 22px; height: 22px; border-radius: 50%; overflow: hidden;
+      pointer-events: none; background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .flag-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+    .chevron {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      pointer-events: none; color: var(--text-dim);
+    }
+
+    .swap-btn {
+      width: 42px; height: 52px; display: flex; align-items: center; justify-content: center;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); cursor: pointer; color: var(--text-muted);
+      transition: all 0.2s; align-self: flex-end;
+    }
+    .swap-btn:hover { border-color: var(--accent); color: var(--accent); transform: rotate(180deg); }
+
+    .convert-btn {
+      width: 100%; height: 52px; border: none; cursor: pointer;
+      background: var(--accent); color: #000;
+      font-family: var(--sans); font-size: 1rem; font-weight: 700;
+      border-radius: var(--radius); letter-spacing: 0.01em;
+      transition: all 0.2s; margin-top: 0.5rem;
+    }
+    .convert-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .convert-btn:active { transform: translateY(0); }
+    .convert-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* RESULT */
+    .result-box {
+      margin-top: 1.5rem; padding: 1.25rem 1.5rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); min-height: 70px;
+      display: flex; flex-direction: column; justify-content: center;
+      transition: border-color 0.3s;
+    }
+    .result-box.has-result { border-color: var(--accent-glow); }
+
+    .result-amount {
+      font-family: var(--mono); font-size: 1.75rem; font-weight: 500;
+      color: var(--accent); letter-spacing: -0.02em;
+    }
+    .result-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+    .result-error { color: var(--danger); font-size: 0.9rem; }
+    .result-loading { color: var(--text-muted); font-size: 0.9rem; font-style: italic; }
+
+    /* RATE TAG */
+    .rate-tag {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 1rem; font-size: 0.75rem; color: var(--text-dim);
+      font-family: var(--mono);
+    }
+    .rate-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+    /* POPULAR */
+    .popular {
+      margin-top: 2rem; width: 100%; max-width: 520px;
+    }
+    .popular-label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; text-align: center; }
+    .popular-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .pair-chip {
+      padding: 5px 14px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 100px; font-size: 0.8rem; font-family: var(--mono);
+      color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+    }
+    .pair-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+    /* FOOTER */
+    footer {
+      text-align: center; padding: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.78rem; color: var(--text-dim);
+    }
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    /* MOBILE NAV MENU */
+    .mobile-menu {
+      display: none; position: fixed; top: 60px; left: 0; right: 0; z-index: 99;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 1rem;
+    }
+    .mobile-menu.open { display: flex; flex-direction: column; gap: 4px; }
+    .mobile-menu a { color: var(--text-muted); text-decoration: none; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 0.95rem; }
+    .mobile-menu a:hover { background: var(--surface2); color: var(--text); }
+
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      .burger { display: flex; }
+      nav { padding: 0 1.25rem; }
+      .card { padding: 1.5rem; border-radius: 16px; }
+      .currency-row { grid-template-columns: 1fr auto 1fr; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">
+    XChange<span class="dot">Now</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active" data-key="nav-home">Home</a></li>
+    <li><a href="about.html" data-key="nav-about">About</a></li>
+    <li><a href="contact.html" data-key="nav-contact">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" data-lang="es">ES</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+    <div class="burger" id="burger">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html" data-key="nav-home">Home</a>
+  <a href="about.html" data-key="nav-about">About</a>
+  <a href="contact.html" data-key="nav-contact">Contact</a>
+</div>
+
+<main>
+  <div class="hero-label" data-key="hero-label">Conversor en Tiempo Real</div>
+  <h1 data-key="h1">Convierte <span>divisas</span><br>al instante</h1>
+  <p class="subtitle" data-key="subtitle">Tasas actualizadas. Más de 160 monedas. Sin registro.</p>
+
+  <div class="card">
+    <div class="field">
+      <label data-key="label-amount">Cantidad</label>
+      <input type="number" id="amount" placeholder="0.00" min="0.01" step="0.01" value="">
+    </div>
+
+    <div class="currency-row">
+      <div class="select-wrap">
+        <label data-key="label-from">De</label>
+        <div class="flag-preview" id="flag-from">
+          <img src="" alt="" id="img-from">
+        </div>
+        <select class="flag-select" id="from-currency"></select>
+        <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <button class="swap-btn" id="swap-btn" title="Swap">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M3 9h12M3 9l3-3M3 9l3 3M15 9l-3-3M15 9l-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <div class="select-wrap">
+        <label data-key="label-to">A</label>
+        <div class="flag-preview" id="flag-to">
+          <img src="" alt="" id="img-to">
+        </div>
+        <select class="flag-select" id="to-currency"></select>
+        <svg class="chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <button class="convert-btn" id="convert-btn" data-key="btn-convert">Convertir</button>
+
+    <div class="result-box" id="result-box">
+      <span class="result-loading" id="result-placeholder" data-key="result-placeholder">Ingresa un monto y presiona Convertir</span>
+    </div>
+
+    <div class="rate-tag" id="rate-tag" style="display:none">
+      <span class="rate-dot"></span>
+      <span id="rate-text"></span>
+    </div>
+  </div>
+
+  <div class="popular">
+    <div class="popular-label" data-key="popular-label">Pares populares</div>
+    <div class="popular-grid" id="popular-grid"></div>
+  </div>
+</main>
+
+<footer>
+  <p>
+    Hecho por <a href="https://github.com/dev-vixo">dev-vixo</a> · Powered by
+    <a href="https://exchangerate-api.com" target="_blank">ExchangeRate API</a>
+  </p>
+</footer>
+
+<script>
+const CURRENCIES = [
+  {code:"AED",name:"UAE Dirham",country:"ae"},
+  {code:"AFN",name:"Afghan Afghani",country:"af"},
+  {code:"ALL",name:"Albanian Lek",country:"al"},
+  {code:"AMD",name:"Armenian Dram",country:"am"},
+  {code:"ANG",name:"Antillean Guilder",country:"cw"},
+  {code:"AOA",name:"Angolan Kwanza",country:"ao"},
+  {code:"ARS",name:"Argentine Peso",country:"ar"},
+  {code:"AUD",name:"Australian Dollar",country:"au"},
+  {code:"AWG",name:"Aruban Florin",country:"aw"},
+  {code:"AZN",name:"Azerbaijani Manat",country:"az"},
+  {code:"BAM",name:"Bosnia Mark",country:"ba"},
+  {code:"BBD",name:"Barbadian Dollar",country:"bb"},
+  {code:"BDT",name:"Bangladeshi Taka",country:"bd"},
+  {code:"BGN",name:"Bulgarian Lev",country:"bg"},
+  {code:"BHD",name:"Bahraini Dinar",country:"bh"},
+  {code:"BIF",name:"Burundian Franc",country:"bi"},
+  {code:"BMD",name:"Bermudian Dollar",country:"bm"},
+  {code:"BND",name:"Brunei Dollar",country:"bn"},
+  {code:"BOB",name:"Bolivian Boliviano",country:"bo"},
+  {code:"BRL",name:"Brazilian Real",country:"br"},
+  {code:"BSD",name:"Bahamian Dollar",country:"bs"},
+  {code:"BTN",name:"Bhutanese Ngultrum",country:"bt"},
+  {code:"BWP",name:"Botswana Pula",country:"bw"},
+  {code:"BYN",name:"Belarusian Ruble",country:"by"},
+  {code:"BZD",name:"Belize Dollar",country:"bz"},
+  {code:"CAD",name:"Canadian Dollar",country:"ca"},
+  {code:"CDF",name:"Congolese Franc",country:"cd"},
+  {code:"CHF",name:"Swiss Franc",country:"ch"},
+  {code:"CLP",name:"Chilean Peso",country:"cl"},
+  {code:"CNY",name:"Chinese Yuan",country:"cn"},
+  {code:"COP",name:"Colombian Peso",country:"co"},
+  {code:"CRC",name:"Costa Rican Colón",country:"cr"},
+  {code:"CUP",name:"Cuban Peso",country:"cu"},
+  {code:"CVE",name:"Cape Verdean Escudo",country:"cv"},
+  {code:"CZK",name:"Czech Koruna",country:"cz"},
+  {code:"DJF",name:"Djiboutian Franc",country:"dj"},
+  {code:"DKK",name:"Danish Krone",country:"dk"},
+  {code:"DOP",name:"Dominican Peso",country:"do"},
+  {code:"DZD",name:"Algerian Dinar",country:"dz"},
+  {code:"EGP",name:"Egyptian Pound",country:"eg"},
+  {code:"ERN",name:"Eritrean Nakfa",country:"er"},
+  {code:"ETB",name:"Ethiopian Birr",country:"et"},
+  {code:"EUR",name:"Euro",country:"eu"},
+  {code:"FJD",name:"Fijian Dollar",country:"fj"},
+  {code:"FKP",name:"Falkland Pound",country:"fk"},
+  {code:"GBP",name:"British Pound",country:"gb"},
+  {code:"GEL",name:"Georgian Lari",country:"ge"},
+  {code:"GHS",name:"Ghanaian Cedi",country:"gh"},
+  {code:"GIP",name:"Gibraltar Pound",country:"gi"},
+  {code:"GMD",name:"Gambian Dalasi",country:"gm"},
+  {code:"GNF",name:"Guinean Franc",country:"gn"},
+  {code:"GTQ",name:"Guatemalan Quetzal",country:"gt"},
+  {code:"GYD",name:"Guyanese Dollar",country:"gy"},
+  {code:"HKD",name:"Hong Kong Dollar",country:"hk"},
+  {code:"HNL",name:"Honduran Lempira",country:"hn"},
+  {code:"HRK",name:"Croatian Kuna",country:"hr"},
+  {code:"HTG",name:"Haitian Gourde",country:"ht"},
+  {code:"HUF",name:"Hungarian Forint",country:"hu"},
+  {code:"IDR",name:"Indonesian Rupiah",country:"id"},
+  {code:"ILS",name:"Israeli Shekel",country:"il"},
+  {code:"INR",name:"Indian Rupee",country:"in"},
+  {code:"IQD",name:"Iraqi Dinar",country:"iq"},
+  {code:"IRR",name:"Iranian Rial",country:"ir"},
+  {code:"ISK",name:"Icelandic Króna",country:"is"},
+  {code:"JMD",name:"Jamaican Dollar",country:"jm"},
+  {code:"JOD",name:"Jordanian Dinar",country:"jo"},
+  {code:"JPY",name:"Japanese Yen",country:"jp"},
+  {code:"KES",name:"Kenyan Shilling",country:"ke"},
+  {code:"KGS",name:"Kyrgyz Som",country:"kg"},
+  {code:"KHR",name:"Cambodian Riel",country:"kh"},
+  {code:"KMF",name:"Comorian Franc",country:"km"},
+  {code:"KPW",name:"North Korean Won",country:"kp"},
+  {code:"KRW",name:"South Korean Won",country:"kr"},
+  {code:"KWD",name:"Kuwaiti Dinar",country:"kw"},
+  {code:"KYD",name:"Cayman Dollar",country:"ky"},
+  {code:"KZT",name:"Kazakhstani Tenge",country:"kz"},
+  {code:"LAK",name:"Laotian Kip",country:"la"},
+  {code:"LBP",name:"Lebanese Pound",country:"lb"},
+  {code:"LKR",name:"Sri Lankan Rupee",country:"lk"},
+  {code:"LRD",name:"Liberian Dollar",country:"lr"},
+  {code:"LSL",name:"Lesotho Loti",country:"ls"},
+  {code:"LYD",name:"Libyan Dinar",country:"ly"},
+  {code:"MAD",name:"Moroccan Dirham",country:"ma"},
+  {code:"MDL",name:"Moldovan Leu",country:"md"},
+  {code:"MGA",name:"Malagasy Ariary",country:"mg"},
+  {code:"MKD",name:"Macedonian Denar",country:"mk"},
+  {code:"MMK",name:"Myanmar Kyat",country:"mm"},
+  {code:"MNT",name:"Mongolian Tögrög",country:"mn"},
+  {code:"MOP",name:"Macanese Pataca",country:"mo"},
+  {code:"MRU",name:"Mauritanian Ouguiya",country:"mr"},
+  {code:"MUR",name:"Mauritian Rupee",country:"mu"},
+  {code:"MVR",name:"Maldivian Rufiyaa",country:"mv"},
+  {code:"MWK",name:"Malawian Kwacha",country:"mw"},
+  {code:"MXN",name:"Mexican Peso",country:"mx"},
+  {code:"MYR",name:"Malaysian Ringgit",country:"my"},
+  {code:"MZN",name:"Mozambican Metical",country:"mz"},
+  {code:"NAD",name:"Namibian Dollar",country:"na"},
+  {code:"NGN",name:"Nigerian Naira",country:"ng"},
+  {code:"NIO",name:"Nicaraguan Córdoba",country:"ni"},
+  {code:"NOK",name:"Norwegian Krone",country:"no"},
+  {code:"NPR",name:"Nepalese Rupee",country:"np"},
+  {code:"NZD",name:"New Zealand Dollar",country:"nz"},
+  {code:"OMR",name:"Omani Rial",country:"om"},
+  {code:"PAB",name:"Panamanian Balboa",country:"pa"},
+  {code:"PEN",name:"Peruvian Sol",country:"pe"},
+  {code:"PGK",name:"Papua New Guinean Kina",country:"pg"},
+  {code:"PHP",name:"Philippine Peso",country:"ph"},
+  {code:"PKR",name:"Pakistani Rupee",country:"pk"},
+  {code:"PLN",name:"Polish Złoty",country:"pl"},
+  {code:"PYG",name:"Paraguayan Guaraní",country:"py"},
+  {code:"QAR",name:"Qatari Riyal",country:"qa"},
+  {code:"RON",name:"Romanian Leu",country:"ro"},
+  {code:"RSD",name:"Serbian Dinar",country:"rs"},
+  {code:"RUB",name:"Russian Ruble",country:"ru"},
+  {code:"RWF",name:"Rwandan Franc",country:"rw"},
+  {code:"SAR",name:"Saudi Riyal",country:"sa"},
+  {code:"SBD",name:"Solomon Islands Dollar",country:"sb"},
+  {code:"SCR",name:"Seychellois Rupee",country:"sc"},
+  {code:"SDG",name:"Sudanese Pound",country:"sd"},
+  {code:"SEK",name:"Swedish Krona",country:"se"},
+  {code:"SGD",name:"Singapore Dollar",country:"sg"},
+  {code:"SHP",name:"Saint Helena Pound",country:"sh"},
+  {code:"SLL",name:"Sierra Leonean Leone",country:"sl"},
+  {code:"SOS",name:"Somali Shilling",country:"so"},
+  {code:"SRD",name:"Surinamese Dollar",country:"sr"},
+  {code:"STN",name:"São Tomé Dobra",country:"st"},
+  {code:"SVC",name:"Salvadoran Colón",country:"sv"},
+  {code:"SYP",name:"Syrian Pound",country:"sy"},
+  {code:"SZL",name:"Swazi Lilangeni",country:"sz"},
+  {code:"THB",name:"Thai Baht",country:"th"},
+  {code:"TJS",name:"Tajikistani Somoni",country:"tj"},
+  {code:"TMT",name:"Turkmenistani Manat",country:"tm"},
+  {code:"TND",name:"Tunisian Dinar",country:"tn"},
+  {code:"TOP",name:"Tongan Paʻanga",country:"to"},
+  {code:"TRY",name:"Turkish Lira",country:"tr"},
+  {code:"TTD",name:"Trinidad Dollar",country:"tt"},
+  {code:"TWD",name:"Taiwan Dollar",country:"tw"},
+  {code:"TZS",name:"Tanzanian Shilling",country:"tz"},
+  {code:"UAH",name:"Ukrainian Hryvnia",country:"ua"},
+  {code:"UGX",name:"Ugandan Shilling",country:"ug"},
+  {code:"USD",name:"US Dollar",country:"us"},
+  {code:"UYU",name:"Uruguayan Peso",country:"uy"},
+  {code:"UZS",name:"Uzbekistani Sum",country:"uz"},
+  {code:"VES",name:"Venezuelan Bolívar",country:"ve"},
+  {code:"VND",name:"Vietnamese Dong",country:"vn"},
+  {code:"VUV",name:"Vanuatu Vatu",country:"vu"},
+  {code:"WST",name:"Samoan Tālā",country:"ws"},
+  {code:"XAF",name:"Central African Franc",country:"cm"},
+  {code:"XCD",name:"East Caribbean Dollar",country:"ag"},
+  {code:"XOF",name:"West African Franc",country:"sn"},
+  {code:"XPF",name:"CFP Franc",country:"pf"},
+  {code:"YER",name:"Yemeni Rial",country:"ye"},
+  {code:"ZAR",name:"South African Rand",country:"za"},
+  {code:"ZMW",name:"Zambian Kwacha",country:"zm"},
+  {code:"ZWL",name:"Zimbabwean Dollar",country:"zw"}
+];
+
+const POPULAR_PAIRS = [
+  ["USD","EUR"],["USD","GBP"],["USD","JPY"],
+  ["USD","CLP"],["EUR","ARS"],["USD","MXN"],
+  ["GBP","EUR"],["USD","BRL"]
+];
+
+const i18n = {
+  es: {
+    "hero-label": "Conversor en Tiempo Real",
+    "h1": "Convierte <span>divisas</span><br>al instante",
+    "subtitle": "Tasas actualizadas. Más de 160 monedas. Sin registro.",
+    "label-amount": "Cantidad",
+    "label-from": "De",
+    "label-to": "A",
+    "btn-convert": "Convertir",
+    "result-placeholder": "Ingresa un monto y presiona Convertir",
+    "popular-label": "Pares populares",
+    "nav-home": "Inicio",
+    "nav-about": "Acerca de",
+    "nav-contact": "Contacto",
+    "err-invalid": "Ingresa un monto válido mayor a cero.",
+    "err-same": "Selecciona monedas diferentes.",
+    "loading": "Calculando…",
+    "err-api": "Error al obtener la tasa. Intenta nuevamente.",
+    "rate-label": (from, to, rate) => `1 ${from} = ${rate} ${to}`,
+  },
+  en: {
+    "hero-label": "Real-Time Converter",
+    "h1": "Convert <span>currencies</span><br>instantly",
+    "subtitle": "Live rates. 160+ currencies. No sign-up.",
+    "label-amount": "Amount",
+    "label-from": "From",
+    "label-to": "To",
+    "btn-convert": "Convert",
+    "result-placeholder": "Enter an amount and press Convert",
+    "popular-label": "Popular pairs",
+    "nav-home": "Home",
+    "nav-about": "About",
+    "nav-contact": "Contact",
+    "err-invalid": "Please enter a valid amount greater than zero.",
+    "err-same": "Please select different currencies.",
+    "loading": "Calculating…",
+    "err-api": "Error fetching rate. Please try again.",
+    "rate-label": (from, to, rate) => `1 ${from} = ${rate} ${to}`,
+  }
+};
+
+let lang = "es";
+let lastRate = null;
+let lastFrom = null;
+let lastTo = null;
+let lastAmount = null;
+
+function flagUrl(country) {
+  return `https://flagcdn.com/w40/${country}.png`;
+}
+
+function populateSelects() {
+  const fromSel = document.getElementById("from-currency");
+  const toSel = document.getElementById("to-currency");
+  CURRENCIES.forEach(c => {
+    const label = `${c.code} — ${c.name}`;
+    fromSel.appendChild(new Option(label, c.code));
+    toSel.appendChild(new Option(label, c.code));
+  });
+  fromSel.value = "USD";
+  toSel.value = "CLP";
+}
+
+function getCountry(code) {
+  return CURRENCIES.find(c => c.code === code)?.country || "us";
+}
+
+function updateFlag(selectId, imgId) {
+  const code = document.getElementById(selectId).value;
+  const country = getCountry(code);
+  document.getElementById(imgId).src = flagUrl(country);
+}
+
+function populatePopularPairs() {
+  const grid = document.getElementById("popular-grid");
+  grid.innerHTML = "";
+  POPULAR_PAIRS.forEach(([a, b]) => {
+    const chip = document.createElement("button");
+    chip.className = "pair-chip";
+    chip.textContent = `${a} / ${b}`;
+    chip.onclick = () => {
+      document.getElementById("from-currency").value = a;
+      document.getElementById("to-currency").value = b;
+      updateFlag("from-currency", "img-from");
+      updateFlag("to-currency", "img-to");
+    };
+    grid.appendChild(chip);
+  });
+}
+
+function applyLang(l) {
+  lang = l;
+  document.querySelectorAll("[data-lang]").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.lang === l);
+  });
+  document.querySelectorAll("[data-key]").forEach(el => {
+    const key = el.dataset.key;
+    const val = i18n[l][key];
+    if (val && typeof val === "string") el.innerHTML = val;
+  });
+  if (lastRate !== null) showResult(lastAmount, lastFrom, lastTo, lastRate);
+}
+
+function fmt(num, code) {
+  try {
+    return new Intl.NumberFormat(lang === "es" ? "es-CL" : "en-US", {
+      style: "currency", currency: code, maximumFractionDigits: 4
+    }).format(num);
+  } catch {
+    return `${num.toFixed(4)} ${code}`;
+  }
+}
+
+function showResult(amount, from, to, rate) {
+  const converted = amount * rate;
+  const box = document.getElementById("result-box");
+  box.innerHTML = `
+    <div class="result-amount">${fmt(converted, to)}</div>
+    <div class="result-label">${fmt(amount, from)} → ${to}</div>
+  `;
+  box.className = "result-box has-result";
+  const rateTag = document.getElementById("rate-tag");
+  document.getElementById("rate-text").textContent =
+    i18n[lang]["rate-label"](from, to, rate.toFixed(6));
+  rateTag.style.display = "flex";
+}
+
+async function doConvert() {
+  const amountEl = document.getElementById("amount");
+  const amount = parseFloat(amountEl.value);
+  const from = document.getElementById("from-currency").value;
+  const to = document.getElementById("to-currency").value;
+  const box = document.getElementById("result-box");
+  const btn = document.getElementById("convert-btn");
+
+  if (isNaN(amount) || amount <= 0) {
+    box.innerHTML = `<span class="result-error">${i18n[lang]["err-invalid"]}</span>`;
+    box.className = "result-box";
+    return;
+  }
+  if (from === to) {
+    box.innerHTML = `<span class="result-error">${i18n[lang]["err-same"]}</span>`;
+    box.className = "result-box";
+    return;
+  }
+
+  btn.disabled = true;
+  box.innerHTML = `<span class="result-loading">${i18n[lang]["loading"]}</span>`;
+  box.className = "result-box";
+  document.getElementById("rate-tag").style.display = "none";
+
+  try {
+    const res = await fetch(`https://api.exchangerate-api.com/v4/latest/${from}`);
+    const data = await res.json();
+    const rate = data.rates[to];
+    if (!rate) throw new Error("No rate");
+    lastRate = rate; lastFrom = from; lastTo = to; lastAmount = amount;
+    showResult(amount, from, to, rate);
+  } catch {
+    box.innerHTML = `<span class="result-error">${i18n[lang]["err-api"]}</span>`;
+    box.className = "result-box";
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// Init
+populateSelects();
+populatePopularPairs();
+updateFlag("from-currency", "img-from");
+updateFlag("to-currency", "img-to");
+applyLang("es");
+
+document.getElementById("from-currency").addEventListener("change", () => updateFlag("from-currency", "img-from"));
+document.getElementById("to-currency").addEventListener("change", () => updateFlag("to-currency", "img-to"));
+document.getElementById("convert-btn").addEventListener("click", doConvert);
+document.getElementById("amount").addEventListener("keydown", e => e.key === "Enter" && doConvert());
+
+document.getElementById("swap-btn").addEventListener("click", () => {
+  const fromSel = document.getElementById("from-currency");
+  const toSel = document.getElementById("to-currency");
+  [fromSel.value, toSel.value] = [toSel.value, fromSel.value];
+  updateFlag("from-currency", "img-from");
+  updateFlag("to-currency", "img-to");
+});
+
+document.querySelectorAll("[data-lang]").forEach(btn => {
+  btn.addEventListener("click", () => applyLang(btn.dataset.lang));
+});
+
+document.getElementById("burger").addEventListener("click", () => {
+  document.getElementById("burger").classList.toggle("open");
+  document.getElementById("mobile-menu").classList.toggle("open");
+});
+</script>
+</body>
+</html>
