@@ -38,7 +38,7 @@
 | Feature | Descripción |
 |---|---|
 | 💱 **Conversión en tiempo real** | Tasas actualizadas en cada consulta vía API |
-| 🌍 **Múltiples divisas** | Soporte para USD, EUR, CLP, ARS y más de 160 monedas |
+| 🌍 **Múltiples divisas** | Soporte para USD, EUR, CLP, ARS y más de 150 monedas |
 | 🏳️ **Banderas automáticas** | Visualización de la bandera según la moneda seleccionada |
 | 🌐 **Multilenguaje** | Interfaz disponible en Español e Inglés |
 | 📱 **Diseño responsive** | Adaptado a móvil con menú hamburguesa |
