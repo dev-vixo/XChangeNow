@@ -11,7 +11,7 @@
 
 **Real-time currency converter · Multi-language · Responsive**
 
-[![Demo](https://img.shields.io/badge/Live%20Demo-→%20xchangenow.vixodev.site-4ade80?style=for-the-badge&logo=vercel&logoColor=white)](https://xchangenow.vixodev.site)
+[![Demo](https://img.shields.io/badge/Live%20Demo-→%20dev-vixo.github.io/XChangeNow/-4ade80?style=for-the-badge&logo=vercel&logoColor=white)](https://xchangenow.vixodev.site)
 [![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-f7df1e?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![License](https://img.shields.io/badge/License-MIT-a78bfa?style=for-the-badge)](LICENSE)
 
@@ -29,7 +29,7 @@
 
 ## Demo
 
-🌐 **[https://xchangenow.vixodev.site](https://xchangenow.vixodev.site)**
+🌐 **[dev-vixo.github.io/XChangeNow/](https://dev-vixo.github.io/XChangeNow/)**
 
 ---
 
